@@ -1,0 +1,115 @@
+"""This module contains utility functions for loading data feature embeddings."""
+
+from pathlib import Path
+
+import joblib
+import numpy as np, sys
+from omegaconf import DictConfig
+
+import hydra
+
+from typing import Tuple
+
+
+def load_two_encoder_data(cfg: DictConfig) -> Tuple[DictConfig, np.ndarray, np.ndarray]:
+    """Load the data in two modalities.
+
+    Args:
+        cfg: configuration file
+    Returns:
+        cfg_dataset: configuration file for the dataset
+        data1: data in modality 1. shape: (N, D1)
+        data2: data in modality 2. shape: (N, D2)
+    """
+    dataset = cfg.dataset
+    cfg_dataset = cfg[cfg.dataset]
+    # load image/audio embeddings and text embeddings
+    if dataset == "leafy_spurge":
+        sys.modules['numpy._core'] = np
+        sys.modules['numpy._core.multiarray'] = np.core.multiarray
+        data1 = joblib.load(
+            Path(
+                cfg_dataset.paths.save_path
+                + f"LeafySpurge_img_emb_{cfg_dataset.img_encoder}.pkl",
+            )
+        )
+        data2 = joblib.load(
+            Path(
+                cfg_dataset.paths.save_path
+                + f"LeafySpurge_text_emb_{cfg_dataset.text_encoder}.pkl",
+            )
+        )
+    elif dataset == "imagenet":
+        data1 = joblib.load(
+            Path(
+                cfg_dataset.paths.save_path
+                + f"ImageNet_img_emb_{cfg_dataset.img_encoder}.pkl",
+            )
+        )
+        data2 = joblib.load(
+            Path(
+                cfg_dataset.paths.save_path
+                + f"ImageNet_text_emb_{cfg_dataset.text_encoder}.pkl",
+            )
+        )
+    else:
+        msg = f"Dataset {dataset} not supported."
+        raise ValueError(msg)
+    return cfg_dataset, data1, data2
+
+
+def load_clip_like_data(cfg: DictConfig) -> Tuple[DictConfig, np.ndarray, np.ndarray]:
+    """Load the data in two modalities. The encoders are the same CLIP like model.
+
+    Args:
+        cfg: configuration file
+    Returns:
+        cfg_dataset: configuration file for the dataset
+        data1: data in modality 1. shape: (N, D1)
+        data2: data in modality 2. shape: (N, D2)
+    """
+    dataset = cfg.dataset
+    cfg_dataset = cfg[cfg.dataset]
+    # load image/audio embeddings and text embeddings
+    if dataset == "leafy_spurge":
+        data1 = joblib.load(
+            Path(
+                cfg_dataset.paths.save_path + "LeafySpurge_img_emb_clip.pkl",
+            )
+        )
+        data2 = joblib.load(
+            Path(
+                cfg_dataset.paths.save_path + "LeafySpurge_text_emb_clip.pkl",
+            )
+        )
+    elif dataset == "imagenet":
+        data1 = joblib.load(
+            Path(
+                cfg_dataset.paths.save_path
+                + f"ImageNet_img_emb_clip.pkl"
+            )
+        )
+        data2 = joblib.load(
+            Path(
+                cfg_dataset.paths.save_path
+                + f"ImageNet_text_emb_clip.pkl"
+            )
+        )
+    else:
+        msg = f"Dataset {dataset} not supported."
+        raise ValueError(msg)
+    return cfg_dataset, data1, data2
+
+
+def origin_centered(x: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """This function returns the origin centered data matrix and the mean of each feature.
+
+    Args:
+        x: data matrix (n_samples, n_features)
+
+    Returns:
+        origin centered data matrix, mean of each feature
+    """
+    return x - np.mean(x, axis=0), np.mean(x, axis=0)
+
+
