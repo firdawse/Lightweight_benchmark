@@ -1,0 +1,56 @@
+#cdefaults:
+#  - override hydra/launcher: joblib
+
+seed: 42
+train_test_ratio: 0.7
+noisy_train_set: True
+repo_root: "/srv/lustre01/project/scalableml-um6p-st-sccs-10v5rwpbsmu/health-analytics/RL/CSA/"
+
+dataset: "leafy_spurge"
+classification_datasets: [leafy_spurge,imagenet]
+dataset_size: {
+  leafy_spurge: 900,
+  imagenet: 50_000
+
+}
+imagenet:
+  sim_dim: 700 # dimension of the similarity score and the CCA transformation
+  equal_weights: False
+  img_encoder: "clip"
+  text_encoder: "gtr"
+  model_name: ""
+  train_test_ratios: [0.1,0.3, 0.5, 0.7] #[0.14, 0.43, 0.71, 1.0]
+  shuffle_ratios: [0.1, 0.3, 0.5, 0.7, 1.0]
+  shuffle: False
+  paths:
+    dataset_path: "/srv/lustre01/project/scalableml-um6p-st-sccs-10v5rwpbsmu/health-analytics/RL/Multi-modal-Data-Alignment/Datasets/imagenet/" # I changed the imagenet path
+    save_path: "/srv/lustre01/project/scalableml-um6p-st-sccs-10v5rwpbsmu/health-analytics/RL/Multi-modal-Data-Alignment/Datasets/imagenet/embeddings/" 
+    plots_path:  "/srv/lustre01/project/scalableml-um6p-st-sccs-10v5rwpbsmu/health-analytics/RL/CSA/plots/Imagenet" 
+    label_embeddings: ${imagenet.paths.dataset_path}_${text_encoder}_label_embeddings.npy
+
+leafy_spurge:
+  sim_dim: 250 # dimension of the similarity score and the CCA transformation
+  equal_weights: False
+  img_encoder: "clip"
+  text_encoder: "gtr"
+  train_test_ratios: [0.4, 0.6, 0.7, 0.888]
+  shuffle_ratios: [1.0]
+  shuffle: False
+  paths:
+    dataset_path: "/srv/lustre01/project/scalableml-um6p-st-sccs-10v5rwpbsmu/health-analytics/RL/Multi-modal-Data-Alignment/Datasets/leafy_spurge/"
+    save_path: "/srv/lustre01/project/scalableml-um6p-st-sccs-10v5rwpbsmu/health-analytics/RL/Multi-modal-Data-Alignment/Datasets/leafy_spurge/embeddings/"
+    plots_path: "/srv/lustre01/project/scalableml-um6p-st-sccs-10v5rwpbsmu/health-analytics/RL/CSA/plots/Leafy_spurge"
+    label_embeddings: ${leafy_spurge.paths.dataset_path}_${text_encoder}_label_embeddings.npy
+
+asif:  # Hyperparameters of asif baseline
+  non_zeros: 800
+  val_exps: [8]
+  max_gpu_mem_gb: 23
+
+# model embedding size
+# clap: 512
+# gtr: 768
+# dino: 1536
+# clip: 1280 (1024 for msrvtt)
+# liploc: 256
+# imagebind: 1024
